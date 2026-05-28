@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  db:
+    # On utilise une image pré-configurée avec pgvector pour le RAG
+    image: ankane/pgvector:latest
+    container_name: visir_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: visir_user
+      POSTGRES_PASSWORD: visir_password
+      POSTGRES_DB: visir_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - visir_postgres_data:/var/lib/postgresql/data
+    networks:
+      - visir_network
+
+  backend:
+    # L'image sera construite à partir du Dockerfile de ton API (Go ou Python)
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: visir_backend
+    restart: unless-stopped
+    environment:
+      # Chaîne de connexion formatée pour être directement lisible par ton ORM ou driver
+      DATABASE_URL: "pgsql://visir_user:visir_password@db:5432/visir_db"
+      LLM_API_KEY: "${LLM_API_KEY}" # À définir dans un fichier .env à la racine
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - visir_network
+
+  frontend:
+    # L'image sera construite à partir du Dockerfile de ton application Angular
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: visir_frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80" # On expose le port 4200 (classique Angular) vers le port 80 du conteneur (souvent Nginx)
+    depends_on:
+      - backend
+    networks:
+      - visir_network
+
+volumes:
+  # Volume nommé indispensable pour ne pas perdre tes notes et tâches au redémarrage
+  visir_postgres_data:
+
+networks:
+  visir_network:
+    driver: bridge
