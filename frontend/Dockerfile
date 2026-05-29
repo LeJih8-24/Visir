@@ -18,4 +18,4 @@ COPY . .
 EXPOSE 4200
 
 # Commande de lancement avec écoute sur toutes les interfaces réseau pour Docker
-CMD ["ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000", "--disable-host-check"]
+CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000"]
