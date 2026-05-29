@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tu pourras ajouter tes variables globales ou classes personnalisées ici plus tard */
+body {
+  @apply bg-gray-50 text-gray-900;
+}

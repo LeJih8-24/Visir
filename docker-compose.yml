@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: visir_password
       POSTGRES_DB: visir_db
     ports:
-      - "5432:5432"
+      - "6767:6767"
     volumes:
       - visir_postgres_data:/var/lib/postgresql/data
     networks:
@@ -36,14 +36,16 @@ services:
       - visir_network
 
   frontend:
-    # L'image sera construite à partir du Dockerfile de ton application Angular
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: visir_frontend
     restart: unless-stopped
     ports:
-      - "4200:80" # On expose le port 4200 (classique Angular) vers le port 80 du conteneur (souvent Nginx)
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app           # Synchronise ton code en temps réel
+      - /app/node_modules         # Isole les node_modules du conteneur
     depends_on:
       - backend
     networks:
