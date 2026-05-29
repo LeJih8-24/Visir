@@ -3,10 +3,19 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import engine, get_db
 import models, schemas
+from fastapi.middleware.cors import CORSMiddleware
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Visir OS API", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200", "http://127.0.0.1:4200"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/health/db")
 def check_db(db: Session = Depends(get_db)):

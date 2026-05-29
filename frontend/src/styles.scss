@@ -2,7 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tu pourras ajouter tes variables globales ou classes personnalisées ici plus tard */
+/* Variables globales de Visir OS */
 body {
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-slate-900 text-slate-100; 
+}
+
+/* Petite classe utilitaire pour avoir des scrollbars plus discrètes */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 rounded-full;
 }
