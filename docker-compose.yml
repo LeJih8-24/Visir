@@ -27,7 +27,6 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://visir_user:visir_password@db:5432/visir_db
-      - GEMINI_API_KEY=***
     depends_on:
       - db
     networks:
