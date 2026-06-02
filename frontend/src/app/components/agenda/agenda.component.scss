@@ -1,0 +1,24 @@
+/* Surcharge des variables FullCalendar pour Visir OS */
+.custom-calendar {
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: #1e293b; /* slate-800 */
+  --fc-neutral-text-color: #94a3b8; /* slate-400 */
+  --fc-border-color: #334155; /* slate-700 */
+  --fc-button-text-color: #f1f5f9;
+  --fc-button-bg-color: #0f172a; /* slate-950 */
+  --fc-button-border-color: #334155;
+  --fc-button-hover-bg-color: #1e293b;
+  --fc-button-hover-border-color: #0d9488; /* teal-600 */
+  --fc-button-active-bg-color: #0d9488;
+  --fc-button-active-border-color: #0f766e;
+  --fc-today-bg-color: rgba(13, 148, 136, 0.15); /* Fond subtil teal pour aujourd'hui */
+
+  .fc-theme-standard td, .fc-theme-standard th {
+    border-color: var(--fc-border-color);
+  }
+  
+  .fc-toolbar-title {
+    font-size: 1.2rem !important;
+    color: #e2e8f0; /* slate-200 */
+  }
+}

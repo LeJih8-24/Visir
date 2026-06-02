@@ -18,18 +18,16 @@ services:
       - visir_network
 
   backend:
-    # L'image sera construite à partir du Dockerfile de ton API (Go ou Python)
-    build:
+    build: 
       context: ./backend
       dockerfile: Dockerfile
     container_name: visir_backend
     restart: unless-stopped
-    environment:
-      # Chaîne de connexion formatée pour être directement lisible par ton ORM ou driver
-      DATABASE_URL: "pgsql://visir_user:visir_password@db:5432/visir_db"
-      LLM_API_KEY: "${LLM_API_KEY}" # À définir dans un fichier .env à la racine
     ports:
       - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://visir_user:visir_password@db:5432/visir_db
+      - GEMINI_API_KEY=AQ.Ab8RN6KoBBEu2RRLVZHU5xKHFg5h5hn_NYgVWGDPCs_qFueoXA
     depends_on:
       - db
     networks:
@@ -50,10 +48,11 @@ services:
       - backend
     networks:
       - visir_network
-
+      
 volumes:
   # Volume nommé indispensable pour ne pas perdre tes notes et tâches au redémarrage
   visir_postgres_data:
+  ollama_data:
 
 networks:
   visir_network:

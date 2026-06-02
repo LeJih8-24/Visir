@@ -1,0 +1,24 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+export interface AppEvent {
+  id?: number;
+  title: string;
+  start_time: string;
+  end_time?: string;
+  description?: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AgendaService {
+  private apiUrl = 'http://localhost:8000/events/';
+
+  constructor(private http: HttpClient) { }
+
+  getEvents(): Observable<AppEvent[]> {
+    return this.http.get<AppEvent[]>(this.apiUrl);
+  }
+}

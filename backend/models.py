@@ -11,3 +11,12 @@ class Task(Base):
     is_completed = Column(Boolean, default=False)
     priority = Column(String, default="normale") # 'basse', 'normale', 'haute'
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Event(Base):
+    __tablename__ = "events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)
+    description = Column(String, nullable=True)
+    start_time = Column(DateTime)
+    end_time = Column(DateTime)
