@@ -30,6 +30,11 @@ services:
       LLM_API_KEY: "${LLM_API_KEY}" # À définir dans un fichier .env à la racine
     ports:
       - "8000:8000"
+<<<<<<< HEAD
+=======
+    environment:
+      - DATABASE_URL=postgresql://visir_user:visir_password@db:5432/visir_db
+>>>>>>> 33cb3de (chore(secret): removed api environenment)
     depends_on:
       - db
     networks:
