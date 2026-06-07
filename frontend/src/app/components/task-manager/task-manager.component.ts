@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TaskService, Task } from '../../services/task.service';
+import { SyncService } from '../../services/sync.service';
 
 @Component({
   selector: 'app-task-manager',
@@ -17,15 +18,26 @@ export class TaskManagerComponent implements OnInit {
   editingTaskId: number | undefined | null = null;
   editTaskTitle: string = '';
 
-  constructor(private taskService: TaskService) {}
+  constructor(
+    private taskService: TaskService,
+    private cdr: ChangeDetectorRef,
+    private syncService: SyncService
+  ) {}
 
   ngOnInit(): void {
     this.loadTasks();
+
+    this.syncService.refreshNeeded$.subscribe(() => {
+      this.loadTasks(); // Si l'IA signale un changement, on recharge silencieusement
+    });
   }
 
   loadTasks(): void {
     this.taskService.getTasks().subscribe({
-      next: (data) => this.tasks = data,
+      next: (data) => {
+        this.tasks = data;
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Erreur lors du chargement des tâches', err)
     });
   }
@@ -33,11 +45,13 @@ export class TaskManagerComponent implements OnInit {
   addTask(): void {
     if (!this.newTaskTitle.trim()) return;
     
-    const newTask: Task = { title: this.newTaskTitle, priority: 'normale' };
+    const newTask: any = { title: this.newTaskTitle, priority: 'normale' }; 
+    
     this.taskService.createTask(newTask).subscribe({
       next: (task) => {
         this.tasks.push(task);
         this.newTaskTitle = '';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -45,18 +59,19 @@ export class TaskManagerComponent implements OnInit {
   toggleCompletion(task: Task): void {
     const updatedStatus = !task.is_completed;
     this.taskService.updateTask(task.id!, { is_completed: updatedStatus }).subscribe({
-      next: () => task.is_completed = updatedStatus
+      next: () => {
+        task.is_completed = updatedStatus;
+        this.cdr.detectChanges();
+      }
     });
   }
-
-  // --- NOUVELLES MÉTHODES DE GESTION ---
 
   deleteTask(id: number | undefined): void {
     if (!id) return;
     this.taskService.deleteTask(id).subscribe({
       next: () => {
-        // On retire la tâche du tableau visuel une fois supprimée en base
         this.tasks = this.tasks.filter(t => t.id !== id);
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Erreur lors de la suppression', err)
     });
@@ -65,11 +80,13 @@ export class TaskManagerComponent implements OnInit {
   startEdit(task: Task): void {
     this.editingTaskId = task.id;
     this.editTaskTitle = task.title;
+    this.cdr.detectChanges();
   }
 
   cancelEdit(): void {
     this.editingTaskId = null;
     this.editTaskTitle = '';
+    this.cdr.detectChanges();
   }
 
   saveEdit(task: Task): void {
@@ -80,7 +97,6 @@ export class TaskManagerComponent implements OnInit {
 
     this.taskService.updateTask(task.id, { title: this.editTaskTitle }).subscribe({
       next: (updatedTask) => {
-        // On met à jour l'affichage
         task.title = updatedTask.title;
         this.cancelEdit();
       },
