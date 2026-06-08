@@ -280,6 +280,7 @@ def webhook_create_note(note: WebhookNote, x_visir_token: str = Header(None), db
     Vérifie le token dans le header avant d'écrire en base.
     """
     # 1. Vérification de l'identité
+    print(WEBHOOK_SECRET, x_visir_token)
     if x_visir_token != WEBHOOK_SECRET:
         raise HTTPException(status_code=401, detail="Accès refusé au Noyau Visir. Token invalide.")
     
