@@ -10,6 +10,7 @@ import os
 from datetime import datetime
 from pydantic import BaseModel
 from models import Event, Task, Note
+import asyncio
 
 # Création des tables manquantes dans PostgreSQL
 models.Base.metadata.create_all(bind=engine)
@@ -131,11 +132,8 @@ async def chat_with_visir(chat: ChatMessage, db: Session = Depends(get_db)):
             except Exception as e:
                 return f"Erreur modification : {str(e)}"
 
-        # NOUVEL OUTIL : Quick Note
         def create_quick_note(content: str) -> str:
-            """
-            Prend une note rapide ou enregistre une idée, une pensée, une information importante à retenir.
-            """
+            """Prend une note rapide ou enregistre une idée, une pensée, une information importante à retenir."""
             try:
                 new_note = Note(content=content)
                 db.add(new_note)
@@ -166,19 +164,46 @@ async def chat_with_visir(chat: ChatMessage, db: Session = Depends(get_db)):
         3. Formule ta confirmation de manière fluide dès que les fonctions ont retourné un succès.
         """
 
-        # 4. Session de chat multi-outils
-        chat_session = client.aio.chats.create(
-            model='gemini-2.5-flash',
-            config=types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                tools=[add_calendar_event, create_todo_task, complete_todo_task, create_quick_note],
-            )
-        )
+        # =================================================================
+        # 4. EXÉCUTION AVEC GESTION DE LA CHARGE (RETRY & FALLBACK)
+        # =================================================================
+        max_tentatives = 3
         
-        response = await chat_session.send_message(chat.message)
-        texte_reponse = response.text if response.text else "Données synchronisées dans le noyau."
-        return {"response": texte_reponse}
-    
+        for tentative in range(max_tentatives):
+            try:
+                # Modèle principal en 1er essai, modèle secondaire (fallback) ensuite
+                modele_a_utiliser = 'gemini-2.5-flash' if tentative == 0 else 'gemini-2.5-flash-lite'
+                
+                chat_session = client.aio.chats.create(
+                    model=modele_a_utiliser,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                        tools=[add_calendar_event, create_todo_task, complete_todo_task, create_quick_note],
+                    )
+                )
+                
+                response = await chat_session.send_message(chat.message)
+                texte_reponse = response.text if response.text else "Données synchronisées dans le noyau."
+                return {"response": texte_reponse}
+
+            except Exception as e:
+                erreur_str = str(e)
+                # Vérifie s'il s'agit d'une erreur de surcharge serveur
+                if "503" in erreur_str or "UNAVAILABLE" in erreur_str or "high demand" in erreur_str:
+                    if tentative < max_tentatives - 1:
+                        temps_attente = 2 ** tentative  # Attend 1s au premier échec, puis 2s...
+                        print(f"[Visir OS] Surcharge API détectée. Nouvel essai dans {temps_attente}s avec {modele_a_utiliser}...")
+                        await asyncio.sleep(temps_attente)
+                        continue
+                    else:
+                        # Si toutes les tentatives échouent, on prévient l'utilisateur proprement
+                        return {"response": "[ERREUR NOYAU] Connexion aux serveurs cognitifs distants impossible pour le moment. La bande passante est saturée. Veuillez réessayer dans un instant."}
+                else:
+                    # Si c'est une vraie erreur de code ou de connexion, on crash proprement pour débugger
+                    raise HTTPException(status_code=500, detail=erreur_str)
+                    
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
