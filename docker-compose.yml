@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  db:
+    # On utilise une image pré-configurée avec pgvector pour le RAG
+    image: ankane/pgvector:latest
+    container_name: visir_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: visir_user
+      POSTGRES_PASSWORD: visir_password
+      POSTGRES_DB: visir_db
+    ports:
+      - "6767:6767"
+    volumes:
+      - visir_postgres_data:/var/lib/postgresql/data
+    networks:
+      - visir_network
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: visir_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://visir_user:visir_password@db:5432/visir_db
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - db
+    networks:
+      - visir_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: visir_frontend
+    restart: unless-stopped
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app           # Synchronise ton code en temps réel
+      - /app/node_modules         # Isole les node_modules du conteneur
+    depends_on:
+      - backend
+    networks:
+      - visir_network
+      
+volumes:
+  # Volume nommé indispensable pour ne pas perdre tes notes et tâches au redémarrage
+  visir_postgres_data:
+  ollama_data:
+
+networks:
+  visir_network:
+    driver: bridge
