@@ -14,7 +14,7 @@ export interface AppEvent {
   providedIn: 'root'
 })
 export class AgendaService {
-  private apiUrl = 'http://localhost:8000/events/';
+  private apiUrl = '/api/notes/';
 
   constructor(private http: HttpClient) { }
 

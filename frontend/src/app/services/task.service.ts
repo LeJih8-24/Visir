@@ -15,7 +15,7 @@ export interface Task {
   providedIn: 'root'
 })
 export class TaskService {
-  private apiUrl = 'http://localhost:8000/tasks/'; // L'URL de ton backend FastAPI
+  private apiUrl = '/api/tasks/'; // L'URL de ton backend FastAPI
 
   constructor(private http: HttpClient) { }
 

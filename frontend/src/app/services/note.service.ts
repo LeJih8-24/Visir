@@ -12,7 +12,7 @@ export interface Note {
   providedIn: 'root'
 })
 export class NoteService {
-  private apiUrl = 'http://localhost:8000/notes/';
+  private apiUrl = '/api/notes/';
 
   constructor(private http: HttpClient) {}
 

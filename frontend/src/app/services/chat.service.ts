@@ -10,7 +10,7 @@ export interface ChatResponse {
   providedIn: 'root'
 })
 export class ChatService {
-  private apiUrl = 'http://localhost:8000/chat/';
+  private apiUrl = '/api/chat/';
 
   constructor(private http: HttpClient) { }
 
