@@ -7,12 +7,19 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { AgendaService } from '../../services/agenda.service';
+import { SyncService } from '../../services/sync.service'; // Réintégration de la synchro
 
 @Component({
   selector: 'app-agenda',
   standalone: true,
   imports: [CommonModule, FormsModule, FullCalendarModule],
-  templateUrl: './agenda.component.html'
+  templateUrl: './agenda.component.html',
+  // =======================================================================
+  // LE CORRECTIF MAJEUR : Force la balise hôte à occuper tout l'espace disponible
+  // =======================================================================
+  host: {
+    class: 'block h-full w-full'
+  }
 })
 export class AgendaComponent implements OnInit {
   
@@ -34,28 +41,31 @@ export class AgendaComponent implements OnInit {
     slotMaxTime: '24:00:00',
     allDaySlot: false,
 
-    // Les deux types de clics :
     dateClick: this.handleDateClick.bind(this),
-    eventClick: this.handleEventClick.bind(this), // <-- NOUVEAU
+    eventClick: this.handleEventClick.bind(this),
   };
 
-  // Variables pour la modale de CRÉATION
   isModalOpen: boolean = false;
   selectedDate: string = '';
   newEventTitle: string = '';
   newEventTime: string = '12:00';
 
-  // Variables pour la modale de DÉTAILS (Nouvel Événement)
   isDetailsModalOpen: boolean = false;
   selectedEventDetails: any = null;
 
   constructor(
     private agendaService: AgendaService,
+    private syncService: SyncService, // Injection de la synchro
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadEvents();
+
+    // Tendre l'oreille aux signaux radio du Terminal IA
+    this.syncService.refreshNeeded$.subscribe(() => {
+      this.loadEvents();
+    });
   }
 
   loadEvents(): void {
@@ -118,12 +128,10 @@ export class AgendaComponent implements OnInit {
     });
   }
 
-  // --- LOGIQUE DE LECTURE / SUPPRESSION (NOUVEAU) ---
+  // --- LOGIQUE DE LECTURE / SUPPRESSION ---
 
   handleEventClick(arg: any) {
     const event = arg.event;
-    
-    // Formatage propre pour l'affichage (ex: "jeudi 15 juin 2026 à 14:30")
     const formatOptions: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
     
     this.selectedEventDetails = {
@@ -148,8 +156,8 @@ export class AgendaComponent implements OnInit {
 
     this.agendaService.deleteEvent(this.selectedEventDetails.id).subscribe({
       next: () => {
-        this.loadEvents(); // Recharge la vue
-        this.closeDetailsModal(); // Ferme la modale
+        this.loadEvents(); 
+        this.closeDetailsModal(); 
       },
       error: (err) => console.error('Erreur lors de la suppression', err)
     });

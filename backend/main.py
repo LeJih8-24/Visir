@@ -14,8 +14,9 @@ from models import Event, Task, Note
 # Création des tables manquantes dans PostgreSQL
 models.Base.metadata.create_all(bind=engine)
 
+api_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key)
 # Initialisation automatique du client Gemini (lit la variable GEMINI_API_KEY)
-client = genai.Client()
 
 app = FastAPI(title="Visir OS API", version="0.1.0")
 
