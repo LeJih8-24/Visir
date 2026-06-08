@@ -65,7 +65,8 @@
             "allowedHosts": [
               "localhost",
               "127.0.0.1",
-              "172.19.0.4"
+              "172.19.0.4",
+              ".loca.lt"
             ]
           },
           "configurations": {
