@@ -1,0 +1,53 @@
+<div class="h-full w-full bg-slate-900 text-slate-200 p-4 flex flex-col justify-between">
+  
+  <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-2">
+    <div class="flex items-center gap-2">
+      <div class="h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]"></div>
+      <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300">Mémoire Vive / Notes</h2>
+    </div>
+    <span class="text-xs text-slate-500">{{ notes.length }} blocs</span>
+  </div>
+
+  <div class="flex-1 overflow-y-auto space-y-3 pr-1 min-h-0 custom-scrollbar">
+    <div *ngFor="let note of notes" class="group bg-slate-800/40 border border-slate-850 p-3 rounded-xl relative hover:border-slate-700 transition-all">
+      
+      <button (click)="deleteNote(note.id)" class="absolute top-2 right-2 text-slate-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-14v4m-6 0h6m-9 0h12" />
+        </svg>
+      </button>
+
+      <p class="text-sm text-slate-300 leading-relaxed whitespace-pre-line pr-4">
+        {{ note.content }}
+      </p>
+      
+      <span class="text-[10px] text-slate-500 block mt-2">
+        {{ note.created_at | date:'dd/MM HH:mm' }}
+      </span>
+    </div>
+
+    <div *ngIf="notes.length === 0" class="h-full flex flex-col items-center justify-center text-slate-600 space-y-2 py-8">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+      <p class="text-xs tracking-wide">Mémoire vide. En attente de données.</p>
+    </div>
+  </div>
+
+  <div class="mt-4 pt-2 border-t border-slate-800 flex gap-2">
+    <input 
+      type="text" 
+      [(ngModel)]="newNoteContent" 
+      (keyup.enter)="addNote()"
+      placeholder="Note rapide..."
+      class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+    >
+    <button 
+      (click)="addNote()"
+      [disabled]="!newNoteContent.trim()"
+      class="px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl disabled:opacity-40 text-xs transition-colors"
+    >
+      +
+    </button>
+  </div>
+</div>
