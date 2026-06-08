@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import engine, get_db
@@ -15,7 +15,7 @@ import asyncio
 # Création des tables manquantes dans PostgreSQL
 models.Base.metadata.create_all(bind=engine)
 
-api_key = os.getenv("GEMINI_API_KEY")
+api_key = os.getenv("GEMINI_API_KEY"), Header, Header
 client = genai.Client(api_key=api_key)
 # Initialisation automatique du client Gemini (lit la variable GEMINI_API_KEY)
 
@@ -70,7 +70,7 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
     if not db_task:
         raise HTTPException(status_code=404, detail="Tâche non trouvée")
     db.delete(db_task)
-    db.commit()
+    db.commit(), Header
     return {"status": "success", "message": f"La tâche {task_id} a été supprimée avec succès."}
 
 
