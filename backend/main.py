@@ -267,3 +267,28 @@ def delete_note(note_id: int, db: Session = Depends(get_db)):
     db.delete(db_note)
     db.commit()
     return {"status": "success", "message": "Note supprimée."}
+
+WEBHOOK_SECRET = os.getenv("VISIR_WEBHOOK_SECRET", "mot_de_passe_par_defaut")
+
+class WebhookNote(BaseModel):
+    content: str
+
+@app.post("/webhook/note")
+def webhook_create_note(note: WebhookNote, x_visir_token: str = Header(None), db: Session = Depends(get_db)):
+    """
+    Point d'entrée sécurisé pour les Raccourcis iPhone ou n8n/Make.
+    Vérifie le token dans le header avant d'écrire en base.
+    """
+    # 1. Vérification de l'identité
+    if x_visir_token != WEBHOOK_SECRET:
+        raise HTTPException(status_code=401, detail="Accès refusé au Noyau Visir. Token invalide.")
+    
+    try:
+        # 2. Écriture dans la mémoire (base de données)
+        new_note = Note(content=note.content)
+        db.add(new_note)
+        db.commit()
+        return {"status": "success", "message": "Donnée intégrée à Visir OS."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur d'écriture : {str(e)}")
+
