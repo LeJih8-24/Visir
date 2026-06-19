@@ -6,56 +6,72 @@ import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list'; // <-- Ajout du plugin de Liste (Design iOS mobile)
 import { AgendaService } from '../../services/agenda.service';
-import { SyncService } from '../../services/sync.service'; // Réintégration de la synchro
+import { SyncService } from '../../services/sync.service';
 
 @Component({
   selector: 'app-agenda',
   standalone: true,
   imports: [CommonModule, FormsModule, FullCalendarModule],
   templateUrl: './agenda.component.html',
-  // =======================================================================
-  // LE CORRECTIF MAJEUR : Force la balise hôte à occuper tout l'espace disponible
-  // =======================================================================
+  styleUrls: ['./agenda.component.scss'], // Assure-toi que cette ligne est présente pour le style iOS
   host: {
-    class: 'block h-full w-full'
+    class: 'block h-[80vh] w-full' 
   }
 })
 export class AgendaComponent implements OnInit {
   
+  // Fenêtre de création (Style iOS)
+  isModalOpen: boolean = false;
+  newEventTitle: string = '';
+  newEventStart: Date | null = null;
+  newEventEnd: Date | null = null;
+
+  // Fenêtre de détails / suppression
+  isDetailsModalOpen: boolean = false;
+  selectedEventDetails: any = null;
+
   calendarOptions: CalendarOptions = {
-    initialView: 'timeGridWeek',
-    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
+    // Affichage intelligent : Liste sur mobile, Grille sur PC
+    initialView: window.innerWidth < 768 ? 'listWeek' : 'timeGridWeek',
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+      right: 'dayGridMonth,timeGridWeek,listWeek'
     },
     events: [],
-    height: '100%',
+    slotDuration: '00:30:00',
+    height: 'auto',       // La grille s'adapte à l'écran sans créer de double scrollbar
     locale: 'fr',
-    eventColor: '#0d9488',
-    eventDisplay: 'block',
+    firstDay: 1,
     nowIndicator: true,
+    selectable: true, // Permet de glisser pour sélectionner une plage horaire
+    selectMirror: true,
+    dayMaxEvents: true,
+    eventDisplay: 'block',
     slotMinTime: '06:00:00',
     slotMaxTime: '24:00:00',
     allDaySlot: false,
 
-    dateClick: this.handleDateClick.bind(this),
+    // Remplacement de dateClick par "select" pour gérer les plages horaires
+    select: this.handleDateSelect.bind(this),
     eventClick: this.handleEventClick.bind(this),
+
+    // Rendre l'agenda responsive en direct
+    windowResize: (arg) => {
+      if (window.innerWidth < 768) {
+        arg.view.calendar.changeView('listWeek');
+      } else {
+        arg.view.calendar.changeView('timeGridWeek');
+      }
+    }
   };
-
-  isModalOpen: boolean = false;
-  selectedDate: string = '';
-  newEventTitle: string = '';
-  newEventTime: string = '12:00';
-
-  isDetailsModalOpen: boolean = false;
-  selectedEventDetails: any = null;
 
   constructor(
     private agendaService: AgendaService,
-    private syncService: SyncService, // Injection de la synchro
+    private syncService: SyncService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -71,6 +87,7 @@ export class AgendaComponent implements OnInit {
   loadEvents(): void {
     this.agendaService.getEvents().subscribe({
       next: (data) => {
+        // FullCalendar attend un format spécifique (les couleurs Apple seront gérées en CSS)
         const formattedEvents = data.map(evt => ({
           id: evt.id?.toString(),
           title: evt.title,
@@ -84,41 +101,45 @@ export class AgendaComponent implements OnInit {
     });
   }
 
-  // --- LOGIQUE DE CRÉATION ---
+  // ==========================================
+  // LOGIQUE DE CRÉATION (MODALE iOS)
+  // ==========================================
 
-  handleDateClick(arg: any) {
-    const dateObj = new Date(arg.date);
-    const pad = (n: number) => n.toString().padStart(2, '0');
-
-    this.selectedDate = `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`;
-
-    if (!arg.allDay) {
-      this.newEventTime = `${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}`;
-    } else {
-      this.newEventTime = '12:00';
-    }
-
+  handleDateSelect(selectInfo: any) {
+    console.log("Clic détecté sur l'agenda !", selectInfo);
+    this.newEventStart = selectInfo.start;
+    this.newEventEnd = selectInfo.end;
+    this.newEventTitle = '';
     this.isModalOpen = true;
+    
+    // Déselectionne la grille visuellement après l'ouverture de la modale
+    const calendarApi = selectInfo.view.calendar;
+    calendarApi.unselect(); 
     this.cdr.detectChanges();
+    console.log("État de isModalOpen :", this.isModalOpen);
   }
 
   closeModal() {
     this.isModalOpen = false;
     this.newEventTitle = '';
-    this.newEventTime = '12:00';
+    this.newEventStart = null;
+    this.newEventEnd = null;
   }
 
   saveEvent() {
-    if (!this.newEventTitle.trim()) return;
+    if (!this.newEventTitle.trim() || !this.newEventStart || !this.newEventEnd) return;
 
-    const startDateTime = `${this.selectedDate} ${this.newEventTime}:00`;
-    const endDateObj = new Date(startDateTime);
-    endDateObj.setHours(endDateObj.getHours() + 1);
-    
+    // Fonction utilitaire pour formater la date pour FastAPI (YYYY-MM-DD HH:MM:SS)
     const pad = (n: number) => n.toString().padStart(2, '0');
-    const endDateTime = `${endDateObj.getFullYear()}-${pad(endDateObj.getMonth() + 1)}-${pad(endDateObj.getDate())} ${pad(endDateObj.getHours())}:${pad(endDateObj.getMinutes())}:00`;
+    const formatForDB = (dateObj: Date) => {
+      return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())} ${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:00`;
+    };
 
-    const newEvent = { title: this.newEventTitle, start_time: startDateTime, end_time: endDateTime };
+    const newEvent = { 
+      title: this.newEventTitle, 
+      start_time: formatForDB(this.newEventStart), 
+      end_time: formatForDB(this.newEventEnd) 
+    };
 
     this.agendaService.createEvent(newEvent).subscribe({
       next: () => {
@@ -127,8 +148,6 @@ export class AgendaComponent implements OnInit {
       }
     });
   }
-
-  // --- LOGIQUE DE LECTURE / SUPPRESSION ---
 
   handleEventClick(arg: any) {
     const event = arg.event;

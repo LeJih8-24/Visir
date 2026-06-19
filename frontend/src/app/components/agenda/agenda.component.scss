@@ -1,31 +1,219 @@
-/* Surcharge des variables FullCalendar pour Visir OS */
-.custom-calendar {
-  --fc-page-bg-color: transparent;
-  --fc-neutral-bg-color: #1e293b; /* slate-800 */
-  --fc-neutral-text-color: #94a3b8; /* slate-400 */
-  --fc-border-color: #334155; /* slate-700 */
-  --fc-button-text-color: #f1f5f9;
-  --fc-button-bg-color: #0f172a; /* slate-950 */
-  --fc-button-border-color: #334155;
-  --fc-button-hover-bg-color: #1e293b;
-  --fc-button-hover-border-color: #0d9488; /* teal-600 */
-  --fc-button-active-bg-color: #0d9488;
-  --fc-button-active-border-color: #0f766e;
-  --fc-today-bg-color: rgba(13, 148, 136, 0.15); /* Fond subtil teal pour aujourd'hui */
+/* =========================================================
+   1. STRUCTURE GLOBALE ET CORRECTIF DE HAUTEUR
+   ========================================================= */
+:host {
+  display: block;
+}
 
-  .fc-theme-standard td, .fc-theme-standard th {
-    border-color: var(--fc-border-color);
-  }
-  
-  .fc-toolbar-title {
-    font-size: 1.2rem !important;
-    color: #e2e8f0; /* slate-200 */
+.agenda-scroll-container {
+  height: 80vh; 
+  width: 100%;
+  overflow-y: auto; 
+  background: transparent;
+  border-radius: 16px; 
+  padding: 10px;
+}
+
+full-calendar {
+  display: block;
+}
+
+/* =========================================================
+   2. VARIABLES ET DESIGN FULLCALENDAR (STYLE VISIR OS)
+   ========================================================= */
+::ng-deep {
+  .fc {
+    /* Couleurs principales Visir (#0d9488) */
+    --fc-border-color: #e5e5ea;
+    --fc-button-bg-color: transparent;
+    --fc-button-border-color: transparent;
+    --fc-button-text-color: #0d9488; 
+    --fc-button-hover-bg-color: #f0fdfa; /* Fond légèrement vert au survol */
+    --fc-button-hover-border-color: transparent;
+    --fc-button-active-bg-color: #ccfbf1;
+    --fc-button-active-border-color: transparent;
+    
+    /* Événements et indicateurs */
+    --fc-event-bg-color: #0d9488;
+    --fc-event-border-color: #0d9488;
+    --fc-today-bg-color: rgba(13, 148, 136, 0.05); /* Fond Visir très léger pour "Aujourd'hui" */
+    --fc-now-indicator-color: #0d9488;
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: transparent;
+
+    /* Typographie native */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
-  --fc-now-indicator-color: #f43f5e; /* Ligne de l'heure actuelle en Rose/Rouge (rose-500) */
-  --fc-non-business-color: rgba(15, 23, 42, 0.5); /* Assombrit légèrement les week-ends */
-  
-  .fc-timegrid-slot {
-    height: 3em; /* Rend les cases horaires un peu plus hautes et aérées */
+  /* Style des boutons d'en-tête (Mois, Semaine, Nouveau...) */
+  .fc .fc-button-primary {
+    font-weight: 500;
+    text-transform: capitalize;
+    border-radius: 8px;
+    box-shadow: none !important;
+    padding: 6px 12px;
   }
+
+  /* Bouton actif (ex: quand on est sur la vue 'Semaine') */
+  .fc .fc-button-primary:not(:disabled).fc-button-active, 
+  .fc .fc-button-primary:not(:disabled):active {
+    background-color: #0d9488;
+    color: white;
+  }
+
+  /* Grille principale avec bords arrondis (Sur PC) */
+  .fc-theme-standard .fc-scrollgrid {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--fc-border-color);
+  }
+
+  /* Nettoyage des bordures pour la vue Liste (Sur Mobile) */
+  .fc-list {
+    border-radius: 12px;
+    border: none;
+  }
+}
+
+/* =========================================================
+   3. LE BOUTON FLOTTANT MOBILE (FAB)
+   ========================================================= */
+.ios-fab {
+  display: none; 
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background-color: #0d9488;
+  color: white;
+  border: none;
+  font-size: 24px;
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.4); /* Ombre aux couleurs de Visir */
+  cursor: pointer;
+  z-index: 100;
+}
+
+/* =========================================================
+   4. LA FENÊTRE MODALE (AJOUT / DÉTAILS)
+   ========================================================= */
+.ios-modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; 
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; 
+  z-index: 99999 !important; /* Priorité absolue */
+  animation: fadeIn 0.2s ease-out;
+}
+
+.ios-modal-card {
+  background-color: white;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px 20px 0 0; 
+  padding: 20px;
+  box-shadow: 0 -10px 25px rgba(0,0,0,0.1);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ios-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .cancel-btn { color: #0d9488; }
+  
+  .add-btn { 
+    color: #0d9488; 
+    font-weight: 600; 
+    &:disabled { color: #ccc; cursor: not-allowed; }
+  }
+
+  /* Le bouton de suppression reste ROUGE par sécurité */
+  .delete-btn {
+    color: white;
+    background-color: #dc2626; /* Rouge Tailwind */
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+}
+
+.ios-input {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  border: none;
+  border-bottom: 1px solid #e5e5ea;
+  outline: none;
+  background: transparent;
+  margin-bottom: 15px;
+  color: #0d9488; /* Le texte tapé prendra la couleur Visir */
+}
+
+.date-preview {
+  font-size: 14px;
+  color: #8e8e93;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Détails de l'événement (Mode Lecture) */
+.event-detail-line {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: #333;
+  
+  strong {
+    color: #0d9488; /* Les labels (Début, Fin) en couleur Visir */
+    display: inline-block;
+    width: 60px;
+  }
+}
+
+/* =========================================================
+   5. RESPONSIVE (ADAPTATION PC / TABLETTE)
+   ========================================================= */
+@media (max-width: 768px) {
+  .ios-fab { display: block; }
+}
+
+@media (min-width: 769px) {
+  .ios-modal-backdrop {
+    align-items: center; 
+  }
+  .ios-modal-card {
+    border-radius: 16px; 
+  }
+}
+
+/* =========================================================
+   6. ANIMATIONS CLÉS
+   ========================================================= */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

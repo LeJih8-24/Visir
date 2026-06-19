@@ -293,3 +293,54 @@ def webhook_create_note(note: WebhookNote, x_visir_token: str = Header(None), db
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur d'écriture : {str(e)}")
 
+
+# --- WEBHOOKS SUPPLÉMENTAIRES (TODO LIST & AGENDA) ---
+
+class WebhookTask(BaseModel):
+    title: str
+    priority: int = 2  # 1: Haute, 2: Normale, 3: Basse
+
+class WebhookEvent(BaseModel):
+    title: str
+    start_time: str  # Format attendu : YYYY-MM-DD HH:MM:SS
+    end_time: str    # Format attendu : YYYY-MM-DD HH:MM:SS
+
+@app.post("/webhook/task")
+def webhook_create_task(task: WebhookTask, x_visir_token: str = Header(None), db: Session = Depends(get_db)):
+    """
+    Point d'entrée sécurisé pour ajouter une tâche à la Todo List.
+    """
+    if x_visir_token != WEBHOOK_SECRET:
+        raise HTTPException(status_code=401, detail="Accès refusé au Noyau Visir. Token invalide.")
+    
+    try:
+        new_task = Task(title=task.title, priority=task.priority, is_completed=False)
+        db.add(new_task)
+        db.commit()
+        return {"status": "success", "message": f"Tâche '{task.title}' intégrée à la Todo List."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur d'écriture Task : {str(e)}")
+
+
+@app.post("/webhook/event")
+def webhook_create_event(event: WebhookEvent, x_visir_token: str = Header(None), db: Session = Depends(get_db)):
+    """
+    Point d'entrée sécurisé pour ajouter un événement à l'Agenda.
+    Format de date requis : YYYY-MM-DD HH:MM:SS
+    """
+    if x_visir_token != WEBHOOK_SECRET:
+        raise HTTPException(status_code=401, detail="Accès refusé au Noyau Visir. Token invalide.")
+    
+    try:
+        # Conversion des chaînes de caractères reçues en objets datetime Python
+        start = datetime.strptime(event.start_time, '%Y-%m-%d %H:%M:%S')
+        end = datetime.strptime(event.end_time, '%Y-%m-%d %H:%M:%S')
+        
+        new_event = Event(title=event.title, start_time=start, end_time=end)
+        db.add(new_event)
+        db.commit()
+        return {"status": "success", "message": f"Événement '{event.title}'與 l'agenda synchronisé."}
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Format de date invalide. Utilisez 'YYYY-MM-DD HH:MM:SS'")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur d'écriture Event : {str(e)}")
