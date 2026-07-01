@@ -1,28 +1,28 @@
-<div class="flex flex-col h-full bg-slate-950/40 text-slate-200 font-mono">
+<div class="flex flex-col h-full bg-transparent text-slate-800 font-mono">
   
   <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
     
     <div class="flex items-start gap-3" *ngIf="messages.length === 0">
-      <div class="w-8 h-8 rounded-lg bg-teal-900/50 border border-teal-500/30 flex items-center justify-center text-teal-400 text-xs font-bold shrink-0 shadow-md">
+      <div class="w-8 h-8 rounded-lg bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-600 text-xs font-bold shrink-0 shadow-sm">
         VS
       </div>
-      <div class="bg-slate-900/50 border border-slate-800 rounded-2xl px-4 py-2.5 max-w-[85%] text-sm leading-relaxed shadow-sm">
-        <p class="text-teal-400 font-semibold mb-1 text-xs tracking-wider uppercase">Visir OS v1.0</p>
+      <div class="bg-white border border-slate-200 rounded-2xl px-4 py-2.5 max-w-[85%] text-sm leading-relaxed shadow-sm">
+        <p class="text-violet-600 font-semibold mb-1 text-xs tracking-wider uppercase">Visir OS v1.0</p>
         Initialisation du terminal local terminée. Prêt à traiter tes requêtes avec Visir.
       </div>
     </div>
 
     <div *ngFor="let msg of messages" class="flex items-start gap-3" [ngClass]="{'flex-row-reverse': msg.isUser}">
       
-      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 shadow-md transition-all"
-           [ngClass]="msg.isUser ? 'bg-purple-900/50 border border-purple-500/30 text-purple-400' : 'bg-teal-900/50 border border-teal-500/30 text-teal-400'">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 shadow-sm transition-all"
+           [ngClass]="msg.isUser ? 'bg-fuchsia-100 border border-fuchsia-200 text-fuchsia-600' : 'bg-violet-100 border border-violet-200 text-violet-600'">
         {{ msg.isUser ? 'U' : 'VS' }}
       </div>
 
-      <div class="rounded-2xl px-4 py-2.5 max-w-[85%] text-sm leading-relaxed shadow-sm border border-slate-800/60"
-           [ngClass]="msg.isUser ? 'bg-purple-950/20 text-purple-100' : 'bg-slate-900/40 text-slate-200'">
+      <div class="rounded-2xl px-4 py-2.5 max-w-[85%] text-sm leading-relaxed shadow-sm border border-slate-200"
+           [ngClass]="msg.isUser ? 'bg-fuchsia-50 text-slate-800' : 'bg-white text-slate-800'">
         <p class="font-semibold mb-1 text-xs tracking-wider uppercase" 
-           [ngClass]="msg.isUser ? 'text-purple-400' : 'text-teal-400'">
+           [ngClass]="msg.isUser ? 'text-fuchsia-600' : 'text-violet-600'">
           {{ msg.isUser ? 'Utilisateur' : 'Visir OS' }}
         </p>
         <p class="whitespace-pre-wrap">{{ msg.text }}</p>
@@ -30,33 +30,33 @@
     </div>
 
     <div class="flex items-start gap-3" *ngIf="isLoading">
-      <div class="w-8 h-8 rounded-lg bg-teal-900/50 border border-teal-500/30 flex items-center justify-center text-teal-400 text-xs font-bold shrink-0 animate-pulse shadow-md">
+      <div class="w-8 h-8 rounded-lg bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-600 text-xs font-bold shrink-0 animate-pulse shadow-sm">
         VS
       </div>
-      <div class="bg-slate-900/30 border border-slate-800/40 rounded-2xl px-4 py-3 text-sm flex items-center gap-2 text-slate-400 shadow-sm">
+      <div class="bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2 text-slate-500 shadow-sm">
         <span class="flex h-2 w-2 relative">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
         </span>
         Visir est entrain de réfléchir
       </div>
     </div>
   </div>
 
-  <div class="p-4 bg-slate-950/60 border-t border-slate-800/50 backdrop-blur-sm">
-    <div class="flex gap-3 bg-slate-900 border border-slate-700/60 rounded-xl px-4 py-2.5 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 transition-all shadow-inner">
+  <div class="p-4 bg-transparent border-t border-slate-100 backdrop-blur-sm">
+    <div class="flex gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:border-violet-500 focus-within:ring-1 focus-within:ring-violet-500 transition-all shadow-sm">
       <input 
         type="text" 
         [(ngModel)]="newMessage"
         (keyup.enter)="sendMessage()"
         [disabled]="isLoading"
         placeholder="Envoyer une commande à Visir..."
-        class="flex-1 bg-transparent text-sm focus:outline-none text-slate-100 placeholder-slate-500 disabled:opacity-50 font-mono"
+        class="flex-1 bg-transparent text-sm focus:outline-none text-slate-800 placeholder-slate-400 disabled:opacity-50 font-mono"
       >
       <button 
         (click)="sendMessage()"
         [disabled]="isLoading || !newMessage.trim()"
-        class="text-teal-400 hover:text-teal-300 disabled:opacity-30 disabled:hover:text-teal-400 transition-colors flex items-center justify-center shrink-0"
+        class="text-violet-500 hover:text-violet-600 disabled:opacity-30 disabled:hover:text-violet-500 transition-colors flex items-center justify-center shrink-0"
         title="Envoyer">
         <svg class="w-5 h-5 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>

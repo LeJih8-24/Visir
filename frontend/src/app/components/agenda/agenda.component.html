@@ -7,27 +7,41 @@
 
 </div>
 
-<div class="ios-modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
-  <div class="ios-modal-card" (click)="$event.stopPropagation()">
+<!-- Modale de Création (Nouveau Design) -->
+<div class="agenda-modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="agenda-modal-card" (click)="$event.stopPropagation()">
     
-    <div class="ios-modal-header">
-      <button class="cancel-btn" (click)="closeModal()">Annuler</button>
+    <div class="agenda-modal-header">
       <h3>Nouvel événement</h3>
-      <button class="add-btn" [disabled]="!newEventTitle" (click)="saveEvent()">Ajouter</button>
+      <button class="close-btn" (click)="closeModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
-    <div class="ios-modal-body">
-      <input 
-        type="text" 
-        placeholder="Titre de l'événement" 
-        [(ngModel)]="newEventTitle"
-        class="ios-input"
-        autofocus
-      >
-      <div class="date-preview" *ngIf="newEventStart">
-        Du {{ newEventStart | date:'dd/MM/yy HH:mm' }} 
-        au {{ newEventEnd | date:'dd/MM/yy HH:mm' }}
+    <div class="agenda-modal-body">
+      <div class="form-group">
+        <label>Titre</label>
+        <input type="text" placeholder="Titre de l'événement" [(ngModel)]="newEventTitle" class="agenda-input" autofocus>
       </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Début</label>
+          <input type="datetime-local" [(ngModel)]="newEventStartStr" class="agenda-input">
+        </div>
+        <div class="form-group">
+          <label>Fin</label>
+          <input type="datetime-local" [(ngModel)]="newEventEndStr" class="agenda-input">
+        </div>
+      </div>
+    </div>
+
+    <div class="agenda-modal-footer">
+      <div class="flex-spacer"></div>
+      <button class="cancel-btn" (click)="closeModal()">Annuler</button>
+      <button class="save-btn" [disabled]="!newEventTitle || !newEventStartStr || !newEventEndStr" (click)="saveEvent()">Ajouter</button>
     </div>
 
   </div>

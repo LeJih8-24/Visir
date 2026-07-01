@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -9,8 +10,9 @@ from google.genai import types
 import os
 from datetime import datetime
 from pydantic import BaseModel
-from models import Event, Task, Note
+from models import Event, Task, Note, Objective, KeyResult, ProjectMilestone
 import asyncio
+from typing import Optional, List, Dict, Any
 
 # Création des tables manquantes dans PostgreSQL
 models.Base.metadata.create_all(bind=engine)
@@ -70,7 +72,7 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
     if not db_task:
         raise HTTPException(status_code=404, detail="Tâche non trouvée")
     db.delete(db_task)
-    db.commit(), Header
+    db.commit()
     return {"status": "success", "message": f"La tâche {task_id} a été supprimée avec succès."}
 
 
@@ -339,8 +341,109 @@ def webhook_create_event(event: WebhookEvent, x_visir_token: str = Header(None),
         new_event = Event(title=event.title, start_time=start, end_time=end)
         db.add(new_event)
         db.commit()
-        return {"status": "success", "message": f"Événement '{event.title}'與 l'agenda synchronisé."}
+        return {"status": "success", "message": f"Événement '{event.title}' synchronisé avec l'agenda."}
     except ValueError:
         raise HTTPException(status_code=422, detail="Format de date invalide. Utilisez 'YYYY-MM-DD HH:MM:SS'")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur d'écriture Event : {str(e)}")
+    
+
+class ObjectiveCreate(BaseModel):
+    title: str
+    quarter: str
+
+class MilestoneCreate(BaseModel):
+    title: str
+    start_date: str # YYYY-MM-DD
+    end_date: str   # YYYY-MM-DD
+    color_hex: str = "#8b5cf6"
+
+class MilestoneUpdate(BaseModel):
+    title: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    color_hex: Optional[str] = None
+
+@app.get("/macro/okrs")
+def get_okrs(db: Session = Depends(get_db)):
+    """Récupère tous les objectifs avec leurs résultats clés."""
+    objectives = db.query(Objective).all()
+    # Retourne les entités avec leurs relations
+    return objectives
+
+@app.post("/macro/okrs")
+def create_okr(okr: ObjectiveCreate, db: Session = Depends(get_db)):
+    new_objective = Objective(title=okr.title, quarter=okr.quarter)
+    db.add(new_objective)
+    db.commit()
+    return {"status": "success", "id": new_objective.id}
+
+@app.get("/macro/roadmap")
+def get_roadmap(db: Session = Depends(get_db)):
+    """Récupère les projets pour le diagramme de Gantt."""
+    return db.query(ProjectMilestone).order_by(ProjectMilestone.start_date).all()
+
+@app.post("/macro/roadmap")
+def create_milestone(milestone: MilestoneCreate, db: Session = Depends(get_db)):
+    start = datetime.strptime(milestone.start_date, '%Y-%m-%d')
+    end = datetime.strptime(milestone.end_date, '%Y-%m-%d')
+    new_milestone = ProjectMilestone(title=milestone.title, start_date=start, end_date=end, color_hex=milestone.color_hex)
+    db.add(new_milestone)
+    db.commit()
+    db.refresh(new_milestone)
+    return new_milestone
+
+@app.put("/macro/roadmap/{milestone_id}")
+def update_milestone(milestone_id: int, milestone: MilestoneUpdate, db: Session = Depends(get_db)):
+    db_milestone = db.query(ProjectMilestone).filter(ProjectMilestone.id == milestone_id).first()
+    if not db_milestone:
+        raise HTTPException(status_code=404, detail="Projet non trouvé")
+    
+    if milestone.title is not None:
+        db_milestone.title = milestone.title
+    if milestone.start_date is not None:
+        db_milestone.start_date = datetime.strptime(milestone.start_date, '%Y-%m-%d')
+    if milestone.end_date is not None:
+        db_milestone.end_date = datetime.strptime(milestone.end_date, '%Y-%m-%d')
+    if milestone.color_hex is not None:
+        db_milestone.color_hex = milestone.color_hex
+        
+    db.commit()
+    db.refresh(db_milestone)
+    return db_milestone
+
+@app.delete("/macro/roadmap/{milestone_id}")
+def delete_milestone(milestone_id: int, db: Session = Depends(get_db)):
+    db_milestone = db.query(ProjectMilestone).filter(ProjectMilestone.id == milestone_id).first()
+    if not db_milestone:
+        raise HTTPException(status_code=404, detail="Projet non trouvé")
+    
+    db.delete(db_milestone)
+    db.commit()
+    return {"status": "success", "message": "Projet supprimé."}
+
+# --- PROJECT NOTES ---
+
+@app.get("/macro/roadmap/{milestone_id}/notes", response_model=list[schemas.ProjectNoteResponse])
+def get_project_notes(milestone_id: int, db: Session = Depends(get_db)):
+    return db.query(models.ProjectNote).filter(models.ProjectNote.project_id == milestone_id).order_by(models.ProjectNote.created_at.desc()).all()
+
+@app.post("/macro/roadmap/{milestone_id}/notes", response_model=schemas.ProjectNoteResponse)
+def create_project_note(milestone_id: int, note: schemas.ProjectNoteCreate, db: Session = Depends(get_db)):
+    db_milestone = db.query(models.ProjectMilestone).filter(models.ProjectMilestone.id == milestone_id).first()
+    if not db_milestone:
+        raise HTTPException(status_code=404, detail="Projet non trouvé")
+    new_note = models.ProjectNote(project_id=milestone_id, content=note.content)
+    db.add(new_note)
+    db.commit()
+    db.refresh(new_note)
+    return new_note
+
+@app.delete("/macro/roadmap/{milestone_id}/notes/{note_id}")
+def delete_project_note(milestone_id: int, note_id: int, db: Session = Depends(get_db)):
+    db_note = db.query(models.ProjectNote).filter(models.ProjectNote.id == note_id, models.ProjectNote.project_id == milestone_id).first()
+    if not db_note:
+        raise HTTPException(status_code=404, detail="Note introuvable")
+    db.delete(db_note)
+    db.commit()
+    return {"status": "success", "message": "Note de projet supprimée."}

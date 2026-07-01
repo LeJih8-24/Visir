@@ -1,69 +1,76 @@
-<div class="flex h-screen w-full bg-slate-900 text-slate-100 overflow-hidden font-sans relative">
+<div class="flex h-screen w-full bg-slate-50 text-slate-900 overflow-hidden font-sans relative">
   
-  <div class="hidden md:flex w-64 border-r border-slate-800 bg-slate-950 flex-shrink-0 p-4 flex-col justify-between">
+  <div class="hidden md:flex w-64 border-r border-slate-200 bg-white flex-shrink-0 p-4 flex-col justify-between shadow-sm z-10">
     
     <div class="space-y-6">
-      <div class="flex items-center gap-3 px-2 py-3 border-b border-slate-800">
-        <div class="h-6 w-6 rounded bg-teal-500 shadow-[0_0_12px_rgba(20,184,166,0.6)] flex items-center justify-center font-black text-xs text-slate-950">V</div>
-        <span class="font-bold tracking-widest text-sm text-slate-200">VISIR CORE</span>
+      <div class="flex items-center gap-3 px-2 py-3 border-b border-slate-100">
+        <div class="h-6 w-6 rounded-lg bg-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.4)] flex items-center justify-center font-black text-xs text-white">V</div>
+        <span class="font-bold tracking-widest text-sm text-slate-800">VISIR CORE</span>
       </div>
 
       <nav class="space-y-2">
-        <a routerLink="/chat" routerLinkActive="bg-teal-950/40 border-teal-500 text-teal-400 shadow-[inset_4px_0_0_0_#0d9488]" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-all border-l-2 border-transparent group">
-          <span class="text-xs font-mono opacity-50 group-hover:text-teal-400">01 //</span> Terminal IA
+        <a routerLink="/chat" routerLinkActive="bg-violet-50 border-violet-500 text-violet-700 shadow-[inset_4px_0_0_0_#8b5cf6]" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all border-l-2 border-transparent group">
+          <span class="text-xs font-mono opacity-50 group-hover:text-violet-500">01 //</span> Terminal IA
         </a>
-        <a routerLink="/agenda" routerLinkActive="bg-teal-950/40 border-teal-500 text-teal-400 shadow-[inset_4px_0_0_0_#0d9488]" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-all border-l-2 border-transparent group">
-          <span class="text-xs font-mono opacity-50 group-hover:text-teal-400">02 //</span> Planification
+        <a routerLink="/agenda" routerLinkActive="bg-violet-50 border-violet-500 text-violet-700 shadow-[inset_4px_0_0_0_#8b5cf6]" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all border-l-2 border-transparent group">
+          <span class="text-xs font-mono opacity-50 group-hover:text-violet-500">02 //</span> Planification
         </a>
-        <a routerLink="/tasks" routerLinkActive="bg-teal-950/40 border-teal-500 text-teal-400 shadow-[inset_4px_0_0_0_#0d9488]" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-all border-l-2 border-transparent group">
-          <span class="text-xs font-mono opacity-50 group-hover:text-teal-400">03 //</span> Tâches & Prio
+        <a routerLink="/tasks" routerLinkActive="bg-violet-50 border-violet-500 text-violet-700 shadow-[inset_4px_0_0_0_#8b5cf6]" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all border-l-2 border-transparent group">
+          <span class="text-xs font-mono opacity-50 group-hover:text-violet-500">03 //</span> Tâches & Prio
         </a>
-        <a routerLink="/notes" routerLinkActive="bg-teal-950/40 border-teal-500 text-teal-400 shadow-[inset_4px_0_0_0_#0d9488]" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-all border-l-2 border-transparent group">
-          <span class="text-xs font-mono opacity-50 group-hover:text-teal-400">04 //</span> Mémoire Vive
+        <a routerLink="/notes" routerLinkActive="bg-violet-50 border-violet-500 text-violet-700 shadow-[inset_4px_0_0_0_#8b5cf6]" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all border-l-2 border-transparent group">
+          <span class="text-xs font-mono opacity-50 group-hover:text-violet-500">04 //</span> Mémoire Vive
+        </a>
+        <a routerLink="/macrovision" routerLinkActive="bg-violet-50 border-violet-500 text-violet-700 shadow-[inset_4px_0_0_0_#8b5cf6]" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all border-l-2 border-transparent group">
+          <span class="text-xs font-mono opacity-50 group-hover:text-violet-500">04 //</span> Macro vision
         </a>
       </nav>
     </div>
 
-    <div class="p-2 rounded-xl bg-slate-900/40 border border-slate-800/60 text-[10px] font-mono text-slate-500 space-y-1">
-      <div class="flex justify-between"><span>SYS_STATUS:</span><span class="text-teal-500 animate-pulse">ONLINE</span></div>
+    <div class="p-2 rounded-xl bg-slate-100 border border-slate-200 text-[10px] font-mono text-slate-500 space-y-1">
+      <div class="flex justify-between"><span>SYS_STATUS:</span><span class="text-violet-500 animate-pulse">ONLINE</span></div>
       <div class="flex justify-between"><span>DB_LINK:</span><span class="text-emerald-500">CONNECTED</span></div>
     </div>
   </div>
 
   <main class="flex-1 flex flex-col p-4 md:p-6 overflow-hidden gap-4 md:gap-6 pb-24 md:pb-6">
     
-    <header class="flex justify-between items-center pb-2 md:pb-4 border-b border-slate-800 flex-shrink-0">
+    <header class="flex justify-between items-center pb-2 md:pb-4 border-b border-slate-200 flex-shrink-0">
       <div>
-        <h1 class="text-xl md:text-2xl font-bold text-slate-100 tracking-wide">Visir OS</h1>
-        <p class="text-xs md:text-sm text-slate-400">Noyau d'automatisation.</p>
+        <h1 class="text-xl md:text-2xl font-bold text-slate-900 tracking-wide">Visir OS</h1>
+        <p class="text-xs md:text-sm text-slate-500">Noyau d'automatisation.</p>
       </div>
     </header>
 
-    <div class="flex-1 bg-slate-800/30 rounded-2xl border border-slate-700/40 backdrop-blur-sm overflow-hidden flex flex-col shadow-2xl relative">
+    <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-sm overflow-hidden flex flex-col relative">
       <router-outlet></router-outlet>
     </div>
   </main>
 
-  <nav class="md:hidden fixed bottom-0 left-0 w-full bg-slate-950/95 backdrop-blur-md border-t border-slate-800 flex justify-around items-center p-2 z-50 pb-safe">
+  <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around items-center p-2 z-50 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
     
-    <a routerLink="/chat" routerLinkActive="text-teal-400" class="flex flex-col items-center gap-1 p-2 text-slate-500 hover:text-slate-300 transition-colors">
+    <a routerLink="/chat" routerLinkActive="text-violet-600" class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-violet-500 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
       <span class="text-[10px] font-medium">IA</span>
     </a>
     
-    <a routerLink="/agenda" routerLinkActive="text-teal-400" class="flex flex-col items-center gap-1 p-2 text-slate-500 hover:text-slate-300 transition-colors">
+    <a routerLink="/agenda" routerLinkActive="text-violet-600" class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-violet-500 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
       <span class="text-[10px] font-medium">Agenda</span>
     </a>
     
-    <a routerLink="/tasks" routerLinkActive="text-teal-400" class="flex flex-col items-center gap-1 p-2 text-slate-500 hover:text-slate-300 transition-colors">
+    <a routerLink="/tasks" routerLinkActive="text-violet-600" class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-violet-500 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
       <span class="text-[10px] font-medium">Tâches</span>
     </a>
     
-    <a routerLink="/notes" routerLinkActive="text-teal-400" class="flex flex-col items-center gap-1 p-2 text-slate-500 hover:text-slate-300 transition-colors">
+    <a routerLink="/notes" routerLinkActive="text-violet-600" class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-violet-500 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
       <span class="text-[10px] font-medium">Notes</span>
+    </a>
+    <a routerLink="/macrovision" routerLinkActive="text-violet-600" class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-violet-500 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+      <span class="text-[10px] font-medium">Macro Vision</span>
     </a>
 
   </nav>

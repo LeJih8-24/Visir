@@ -25,3 +25,15 @@ class TaskUpdate(BaseModel):
     description: Optional[str] = None
     priority: Optional[str] = None
     is_completed: Optional[bool] = None
+
+class ProjectNoteCreate(BaseModel):
+    content: str
+
+class ProjectNoteResponse(BaseModel):
+    id: int
+    project_id: int
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

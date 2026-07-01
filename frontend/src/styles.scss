@@ -4,7 +4,7 @@
 
 /* Variables globales de Visir OS */
 body {
-  @apply bg-slate-900 text-slate-100; 
+  @apply bg-slate-50 text-slate-900; 
 }
 
 /* Petite classe utilitaire pour avoir des scrollbars plus discrètes */
@@ -15,5 +15,5 @@ body {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-slate-700 rounded-full;
+  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
 }

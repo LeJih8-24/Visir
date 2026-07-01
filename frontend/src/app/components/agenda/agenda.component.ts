@@ -27,44 +27,58 @@ export class AgendaComponent implements OnInit {
   newEventTitle: string = '';
   newEventStart: Date | null = null;
   newEventEnd: Date | null = null;
+  newEventStartStr: string = '';
+  newEventEndStr: string = '';
 
   // Fenêtre de détails / suppression
   isDetailsModalOpen: boolean = false;
   selectedEventDetails: any = null;
 
+  openCreateModal() {
+    const now = new Date();
+    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+    this.handleDateSelect({ start: now, end: oneHourLater, view: { calendar: { unselect: () => {} } } });
+  }
+
   calendarOptions: CalendarOptions = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
-    // Affichage intelligent : Liste sur mobile, Grille sur PC
-    initialView: window.innerWidth < 768 ? 'listWeek' : 'timeGridWeek',
+    initialView: 'listWeek',
+    customButtons: {
+      addEventButton: {
+        text: '+ Nouvel Événement',
+        click: () => {
+          const now = new Date();
+          const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+          this.handleDateSelect({ start: now, end: oneHourLater, view: { calendar: { unselect: () => {} } } });
+        }
+      }
+    },
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
-      right: 'dayGridMonth,timeGridWeek,listWeek'
+      right: 'addEventButton dayGridMonth,timeGridWeek,listWeek'
     },
     events: [],
     slotDuration: '00:30:00',
-    height: 'auto',       // La grille s'adapte à l'écran sans créer de double scrollbar
+    height: 'auto',
     locale: 'fr',
     firstDay: 1,
     nowIndicator: true,
-    selectable: true, // Permet de glisser pour sélectionner une plage horaire
+    selectable: true,
     selectMirror: true,
     dayMaxEvents: true,
     eventDisplay: 'block',
     slotMinTime: '06:00:00',
     slotMaxTime: '24:00:00',
     allDaySlot: false,
+    slotEventOverlap: false, // Mission 3 : Empêcher le chevauchement
 
-    // Remplacement de dateClick par "select" pour gérer les plages horaires
     select: this.handleDateSelect.bind(this),
     eventClick: this.handleEventClick.bind(this),
 
-    // Rendre l'agenda responsive en direct
     windowResize: (arg) => {
       if (window.innerWidth < 768) {
         arg.view.calendar.changeView('listWeek');
-      } else {
-        arg.view.calendar.changeView('timeGridWeek');
       }
     }
   };
@@ -110,6 +124,15 @@ export class AgendaComponent implements OnInit {
     this.newEventStart = selectInfo.start;
     this.newEventEnd = selectInfo.end;
     this.newEventTitle = '';
+    
+    // Format pour l'input datetime-local (YYYY-MM-DDTHH:mm)
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const toDatetimeLocal = (dateObj: Date) => {
+      return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}T${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}`;
+    };
+    this.newEventStartStr = toDatetimeLocal(selectInfo.start);
+    this.newEventEndStr = toDatetimeLocal(selectInfo.end);
+
     this.isModalOpen = true;
     
     // Déselectionne la grille visuellement après l'ouverture de la modale
@@ -124,21 +147,22 @@ export class AgendaComponent implements OnInit {
     this.newEventTitle = '';
     this.newEventStart = null;
     this.newEventEnd = null;
+    this.newEventStartStr = '';
+    this.newEventEndStr = '';
   }
 
   saveEvent() {
-    if (!this.newEventTitle.trim() || !this.newEventStart || !this.newEventEnd) return;
+    if (!this.newEventTitle.trim() || !this.newEventStartStr || !this.newEventEndStr) return;
 
-    // Fonction utilitaire pour formater la date pour FastAPI (YYYY-MM-DD HH:MM:SS)
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const formatForDB = (dateObj: Date) => {
-      return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())} ${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:00`;
+    // Convertir depuis datetime-local vers format DB (YYYY-MM-DD HH:MM:SS)
+    const formatForDB = (datetimeLocalStr: string) => {
+      return datetimeLocalStr.replace('T', ' ') + ':00';
     };
 
     const newEvent = { 
       title: this.newEventTitle, 
-      start_time: formatForDB(this.newEventStart), 
-      end_time: formatForDB(this.newEventEnd) 
+      start_time: formatForDB(this.newEventStartStr), 
+      end_time: formatForDB(this.newEventEndStr) 
     };
 
     this.agendaService.createEvent(newEvent).subscribe({

@@ -1,4 +1,4 @@
-<div class="flex flex-col h-full p-4 gap-4 text-slate-200">
+<div class="flex flex-col h-full p-4 gap-4 text-slate-800">
   
   <div class="flex gap-2">
     <input 
@@ -6,11 +6,11 @@
       [(ngModel)]="newTaskTitle"
       (keyup.enter)="addTask()"
       placeholder="Nouvelle tâche... (Entrée pour valider)"
-      class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all"
+      class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm text-slate-800 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 shadow-sm transition-all"
     >
     <button 
       (click)="addTask()"
-      class="bg-teal-600 hover:bg-teal-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+      class="bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors">
       Ajouter
     </button>
   </div>
@@ -18,7 +18,7 @@
   <div class="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
     
     <div *ngFor="let task of tasks" 
-         class="flex items-center justify-between p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg transition-all group"
+         class="flex items-center justify-between p-3 bg-white hover:bg-slate-50 border border-slate-200 shadow-sm rounded-lg transition-all group"
          [ngClass]="{'opacity-50': task.is_completed}">
       
       <div class="flex items-center gap-3 flex-1">
@@ -26,12 +26,12 @@
           type="checkbox" 
           [checked]="task.is_completed"
           (change)="toggleCompletion(task)"
-          class="w-4 h-4 rounded border-slate-600 bg-slate-900 text-teal-500 focus:ring-teal-500/50 cursor-pointer shrink-0"
+          class="w-4 h-4 rounded border-slate-300 bg-white text-violet-600 focus:ring-violet-500/50 cursor-pointer shrink-0"
         >
         
         <span *ngIf="editingTaskId !== task.id" 
-              class="text-sm font-medium truncate flex-1" 
-              [ngClass]="{'line-through text-slate-500': task.is_completed}">
+              class="text-sm font-medium truncate flex-1 text-slate-700" 
+              [ngClass]="{'line-through text-slate-400': task.is_completed}">
           {{ task.title }}
         </span>
 
@@ -41,13 +41,13 @@
             [(ngModel)]="editTaskTitle"
             (keyup.enter)="saveEdit(task)"
             (keyup.escape)="cancelEdit()"
-            class="flex-1 bg-slate-900 border border-teal-500 rounded px-2 py-1 text-sm focus:outline-none text-slate-100"
+            class="flex-1 bg-slate-50 border border-violet-500 rounded px-2 py-1 text-sm focus:outline-none text-slate-800"
             autofocus
           >
-          <button (click)="saveEdit(task)" class="text-teal-400 hover:text-teal-300">
+          <button (click)="saveEdit(task)" class="text-violet-600 hover:text-violet-500">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
           </button>
-          <button (click)="cancelEdit()" class="text-slate-400 hover:text-red-400">
+          <button (click)="cancelEdit()" class="text-slate-400 hover:text-rose-500">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
@@ -55,18 +55,18 @@
 
       <div *ngIf="editingTaskId !== task.id" class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         
-        <button (click)="startEdit(task)" class="p-1 text-slate-400 hover:text-teal-400 transition-colors" title="Modifier">
+        <button (click)="startEdit(task)" class="p-1 text-slate-400 hover:text-violet-600 transition-colors" title="Modifier">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
         </button>
 
-        <button (click)="deleteTask(task.id)" class="p-1 text-slate-400 hover:text-red-400 transition-colors" title="Supprimer">
+        <button (click)="deleteTask(task.id)" class="p-1 text-slate-400 hover:text-rose-500 transition-colors" title="Supprimer">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
         </button>
       </div>
 
     </div>
 
-    <div *ngIf="tasks.length === 0" class="text-center py-8 text-slate-500 text-sm">
+    <div *ngIf="tasks.length === 0" class="text-center py-8 text-slate-400 text-sm">
       Aucune tâche en cours. Objectif atteint !
     </div>
 

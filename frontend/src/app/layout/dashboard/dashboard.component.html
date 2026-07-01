@@ -1,44 +1,44 @@
-<div class="flex h-screen w-full bg-slate-900 text-slate-100 overflow-hidden font-sans">
+<div class="flex h-screen w-full bg-slate-50 text-slate-900 overflow-hidden font-sans">
   
-  <div class="w-64 border-r border-slate-800 bg-slate-950 flex-shrink-0 p-4 text-slate-500">
+  <div class="w-64 border-r border-slate-200 bg-white flex-shrink-0 p-4 text-slate-400 shadow-sm z-10">
     Menu latéral à venir...
   </div>
 
   <main class="flex-1 flex flex-col p-6 overflow-hidden gap-6">
     
-    <header class="flex justify-between items-center pb-4 border-b border-slate-800 flex-shrink-0">
+    <header class="flex justify-between items-center pb-4 border-b border-slate-200 flex-shrink-0">
       <div>
-        <h1 class="text-2xl font-bold text-teal-400">Visir OS</h1>
-        <p class="text-sm text-slate-400">Système en ligne. IA, Agenda, Tâches et Mémoire actifs.</p>
+        <h1 class="text-2xl font-bold text-violet-600">Visir OS</h1>
+        <p class="text-sm text-slate-500">Système en ligne. IA, Agenda, Tâches et Mémoire actifs.</p>
       </div>
     </header>
 
     <div class="flex-1 grid grid-cols-12 gap-6 overflow-hidden">
       
-      <div class="col-span-4 bg-slate-800/50 rounded-2xl border border-slate-700/50 backdrop-blur-sm overflow-hidden flex flex-col shadow-xl">
-        <div class="p-4 border-b border-slate-700/50 bg-slate-800">
-          <h2 class="text-sm font-semibold tracking-wider text-slate-300 uppercase">Terminal IA</h2>
+      <div class="col-span-4 bg-white rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] backdrop-blur-sm overflow-hidden flex flex-col">
+        <div class="p-4 border-b border-slate-100 bg-slate-50/80">
+          <h2 class="text-sm font-semibold tracking-wider text-slate-700 uppercase">Terminal IA</h2>
         </div>
         <app-chat-interface class="flex-1 overflow-hidden"></app-chat-interface>
       </div>
 
-      <div class="col-span-5 bg-slate-800/50 rounded-2xl border border-slate-700/50 backdrop-blur-sm overflow-hidden flex flex-col shadow-xl">
-        <div class="p-4 border-b border-slate-700/50 bg-slate-800">
-          <h2 class="text-sm font-semibold tracking-wider text-slate-300 uppercase">Planification</h2>
+      <div class="col-span-5 bg-white rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] backdrop-blur-sm overflow-hidden flex flex-col">
+        <div class="p-4 border-b border-slate-100 bg-slate-50/80">
+          <h2 class="text-sm font-semibold tracking-wider text-slate-700 uppercase">Planification</h2>
         </div>
         <app-agenda class="flex-1 overflow-hidden"></app-agenda>
       </div>
 
       <div class="col-span-3 flex flex-col gap-6 overflow-hidden">
         
-        <div class="flex-1 bg-slate-800/50 rounded-2xl border border-slate-700/50 backdrop-blur-sm overflow-hidden flex flex-col shadow-xl">
-          <div class="p-4 border-b border-slate-700/50 bg-slate-800">
-            <h2 class="text-sm font-semibold tracking-wider text-slate-300 uppercase">Tâches & Prio</h2>
+        <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] backdrop-blur-sm overflow-hidden flex flex-col">
+          <div class="p-4 border-b border-slate-100 bg-slate-50/80">
+            <h2 class="text-sm font-semibold tracking-wider text-slate-700 uppercase">Tâches & Prio</h2>
           </div>
           <app-task-manager class="flex-1 overflow-hidden"></app-task-manager>
         </div>
 
-        <div class="flex-1 rounded-2xl border border-slate-700/50 backdrop-blur-sm overflow-hidden flex flex-col shadow-xl">
+        <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] backdrop-blur-sm overflow-hidden flex flex-col">
           <app-quick-notes class="flex-1 overflow-hidden"></app-quick-notes>
         </div>
 
