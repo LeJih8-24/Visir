@@ -2,8 +2,11 @@
 from fastapi import FastAPI, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from database import engine, get_db
+from database import engine, get_db, SessionLocal
 import models, schemas
+import feedparser
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import timedelta
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 from google.genai import types
@@ -86,7 +89,9 @@ class ChatMessage(BaseModel):
 @app.post("/chat/")
 async def chat_with_visir(chat: ChatMessage, db: Session = Depends(get_db)):
     try:
-        # 1. Extraction du contexte complet (Tâches, Agenda et NOTES)
+        from sqlalchemy.orm import joinedload
+        from models import ProjectTask, ProjectNote
+        # 1. Extraction du contexte complet (Tâches, Agenda, NOTES, Projets)
         taches = db.query(Task).all()
         contexte_taches = "\n".join([f"- [ID: {t.id}] [{ 'X' if t.is_completed else ' ' }] {t.title} (Prio: {t.priority})" for t in taches]) or "- Aucune tâche."
 
@@ -96,6 +101,20 @@ async def chat_with_visir(chat: ChatMessage, db: Session = Depends(get_db)):
 
         notes = db.query(Note).order_by(Note.created_at.desc()).all()
         contexte_notes = "\n".join([f"- [ID: {n.id}] {n.content}" for n in notes]) or "- Aucune note enregistrée."
+
+        projets = db.query(ProjectMilestone).options(joinedload(ProjectMilestone.tasks), joinedload(ProjectMilestone.notes)).all()
+        contexte_projets = ""
+        for p in projets:
+            contexte_projets += f"\n- [PROJET ID: {p.id}] {p.title} (Statut: {p.status}, Du {p.start_date.strftime('%Y-%m-%d') if p.start_date else '?'} au {p.end_date.strftime('%Y-%m-%d') if p.end_date else '?'})\n"
+            contexte_projets += f"  Tâches Kanban:\n"
+            if not p.tasks: contexte_projets += "    Aucune tâche.\n"
+            for t in p.tasks:
+                contexte_projets += f"    * [ID: {t.id}] [{t.status}] {t.title}\n"
+            contexte_projets += f"  Notes du projet:\n"
+            if not p.notes: contexte_projets += "    Aucune note.\n"
+            for n in p.notes:
+                contexte_projets += f"    * [ID: {n.id}] {n.content}\n"
+        if not contexte_projets: contexte_projets = "- Aucun projet en cours."
 
         # =================================================================
         # 2. BOÎTE À OUTILS (TOOLS)
@@ -144,6 +163,49 @@ async def chat_with_visir(chat: ChatMessage, db: Session = Depends(get_db)):
             except Exception as e:
                 return f"Erreur sauvegarde note : {str(e)}"
 
+        def create_project(title: str, start_date: str, end_date: str) -> str:
+            """Crée un nouveau projet (milestone). Format de date: YYYY-MM-DD"""
+            try:
+                start = datetime.strptime(start_date, '%Y-%m-%d')
+                end = datetime.strptime(end_date, '%Y-%m-%d')
+                new_project = ProjectMilestone(title=title, start_date=start, end_date=end)
+                db.add(new_project)
+                db.commit()
+                return f"Succès : Le projet '{title}' a été créé."
+            except Exception as e:
+                return f"Erreur projet : {str(e)}"
+
+        def create_project_task(project_id: int, title: str, status: str = "todo") -> str:
+            """Ajoute une tâche dans le Kanban d'un projet. status peut être 'todo', 'in_progress', 'done'."""
+            try:
+                new_task = ProjectTask(project_id=project_id, title=title, status=status)
+                db.add(new_task)
+                db.commit()
+                return f"Succès : La tâche '{title}' a été ajoutée au projet {project_id}."
+            except Exception as e:
+                return f"Erreur tâche projet : {str(e)}"
+
+        def create_project_note(project_id: int, content: str) -> str:
+            """Ajoute une note spécifique à un projet."""
+            try:
+                new_note = ProjectNote(project_id=project_id, content=content)
+                db.add(new_note)
+                db.commit()
+                return f"Succès : La note a été ajoutée au projet {project_id}."
+            except Exception as e:
+                return f"Erreur note projet : {str(e)}"
+                
+        def update_project_task_status(task_id: int, new_status: str) -> str:
+            """Met à jour le statut d'une tâche de projet. new_status doit être 'todo', 'in_progress' ou 'done'."""
+            try:
+                task = db.query(ProjectTask).filter(ProjectTask.id == task_id).first()
+                if not task: return f"Erreur : La tâche ID {task_id} n'existe pas."
+                task.status = new_status
+                db.commit()
+                return f"Succès : Le statut de la tâche ID {task_id} a été mis à jour."
+            except Exception as e:
+                return f"Erreur modification : {str(e)}"
+
         # =================================================================
         # 3. DIRECTIVES SYSTÈME REVISITÉES
         # =================================================================
@@ -151,19 +213,24 @@ async def chat_with_visir(chat: ChatMessage, db: Session = Depends(get_db)):
         Tu es concis, professionnel, avec un ton légèrement cyberpunk. Tu réponds en français.
 
         CONTEXTE EN TEMPS RÉEL ({maintenant.strftime('%Y-%m-%d %H:%M:%S')}) :
-        [TODO LIST]
+        [PROJETS EN COURS (MACRO VISION)]
+        {contexte_projets}
+
+        [TODO LIST GLOBALE]
         {contexte_taches}
 
-        [AGENDA]
+        [AGENDA GLOBAL]
         {contexte_events}
 
-        [NOTES RAPIDES ET IDÉES COMPILÉES]
+        [NOTES RAPIDES GLOBALES]
         {contexte_notes}
 
         RÈGLES D'OUTILS :
-        1. Tu as un accès complet en lecture et écriture sur l'agenda, les tâches et les notes rapides.
-        2. Si l'utilisateur te donne une information à retenir, une idée de projet, ou te dit textuellement "Prends note de X", utilise l'outil `create_quick_note`.
-        3. Formule ta confirmation de manière fluide dès que les fonctions ont retourné un succès.
+        1. Tu as accès à la Todo globale, l'Agenda, les Projets (avec leurs tâches Kanban et leurs notes), et les notes rapides.
+        2. Si on te demande de créer un projet, utilise `create_project`. 
+        3. Si l'utilisateur demande d'ajouter une tâche/note à un projet spécifique, utilise `create_project_task` ou `create_project_note`.
+        4. Si l'utilisateur demande d'ajouter une tâche/note générale, utilise `create_todo_task` ou `create_quick_note`.
+        5. Formule ta confirmation de manière fluide dès que les fonctions ont retourné un succès.
         """
 
         # =================================================================
@@ -180,7 +247,7 @@ async def chat_with_visir(chat: ChatMessage, db: Session = Depends(get_db)):
                     model=modele_a_utiliser,
                     config=types.GenerateContentConfig(
                         system_instruction=system_instruction,
-                        tools=[add_calendar_event, create_todo_task, complete_todo_task, create_quick_note],
+                        tools=[add_calendar_event, create_todo_task, complete_todo_task, create_quick_note, create_project, create_project_task, create_project_note, update_project_task_status],
                     )
                 )
                 
@@ -487,3 +554,88 @@ def delete_project_task(milestone_id: int, task_id: int, db: Session = Depends(g
     db.delete(db_task)
     db.commit()
     return {"status": "success", "message": "Tâche de projet supprimée."}
+
+# --- LOGIQUE DU PORTAIL D'ACTUALITÉS (NEWS) ---
+
+# Liste des flux RSS
+RSS_FEEDS = [
+    {"category": "Informatique", "url": "https://news.ycombinator.com/rss"},
+    {"category": "Trading", "url": "https://www.coindesk.com/arc/outboundfeeds/rss/"},
+    {"category": "Pédagogie", "url": "https://www.edutopia.org/feed"},
+    {"category": "Dev Personnel", "url": "https://zenhabits.net/feed/"},
+    {"category": "Science", "url": "https://www.nature.com/nature.rss"}
+]
+
+def fetch_news_job():
+    """Tâche de fond pour récupérer et nettoyer les actualités."""
+    print("[Visir OS] Démarrage de la tâche de synchronisation des actualités...")
+    db = SessionLocal()
+    try:
+        # Nettoyage des vieux articles (> 7 jours)
+        sept_jours_avant = datetime.utcnow() - timedelta(days=7)
+        db.query(models.NewsArticle).filter(models.NewsArticle.published_at < sept_jours_avant).delete()
+        
+        # Récupération des flux
+        for feed_info in RSS_FEEDS:
+            category = feed_info["category"]
+            feed_url = feed_info["url"]
+            
+            try:
+                parsed_feed = feedparser.parse(feed_url)
+                # On prend les 10 premiers articles
+                for entry in parsed_feed.entries[:10]:
+                    link = entry.link
+                    # Vérifier si l'article existe déjà
+                    existing_article = db.query(models.NewsArticle).filter(models.NewsArticle.link == link).first()
+                    if not existing_article:
+                        title = entry.title
+                        summary = entry.get('summary', '')[:500]
+                        
+                        image_url = None
+                        if 'media_content' in entry and len(entry.media_content) > 0:
+                            image_url = entry.media_content[0].get('url')
+                        elif 'links' in entry:
+                            for l in entry.links:
+                                if l.get('type', '').startswith('image/'):
+                                    image_url = l.get('href')
+                                    break
+                                    
+                        new_article = models.NewsArticle(
+                            title=title,
+                            link=link,
+                            summary=summary,
+                            image_url=image_url,
+                            category=category
+                        )
+                        db.add(new_article)
+            except Exception as e:
+                print(f"[Visir OS] Erreur lors de la lecture du flux {feed_url}: {e}")
+                
+        db.commit()
+        print("[Visir OS] Synchronisation des actualités terminée.")
+    except Exception as e:
+        print(f"[Visir OS] Erreur globale dans le job d'actualités: {e}")
+    finally:
+        db.close()
+
+# Initialisation du Scheduler
+scheduler = BackgroundScheduler()
+# Lancement tous les jours à 6h00
+scheduler.add_job(fetch_news_job, 'cron', hour=6, minute=0)
+
+@app.on_event("startup")
+def start_scheduler():
+    scheduler.start()
+    # Déclenchement initial optionnel (commenté pour la prod, mais utile)
+    # fetch_news_job()
+
+@app.on_event("shutdown")
+def shutdown_scheduler():
+    scheduler.shutdown()
+
+@app.get("/api/news", response_model=list[schemas.NewsArticleResponse])
+def get_news(category: Optional[str] = None, db: Session = Depends(get_db)):
+    query = db.query(models.NewsArticle)
+    if category and category != 'Tous':
+        query = query.filter(models.NewsArticle.category == category)
+    return query.order_by(models.NewsArticle.published_at.desc()).all()

@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, Float
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -84,3 +85,13 @@ class ProjectNote(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("ProjectMilestone", back_populates="notes")
+
+class NewsArticle(Base):
+    __tablename__ = "news_articles"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    link = Column(String, nullable=False, unique=True, index=True)
+    summary = Column(Text, nullable=True)
+    image_url = Column(String, nullable=True)
+    category = Column(String, nullable=False, index=True)
+    published_at = Column(DateTime, default=datetime.utcnow)

@@ -5,6 +5,7 @@ import { TaskManagerComponent } from './components/task-manager/task-manager.com
 import { QuickNotesComponent } from './components/quick-notes/quick-notes.component';
 import { MacroVisionComponent } from './components/macro-vision/macro-vision.component';
 import { ProjectOverviewComponent } from './components/project-overview/project-overview.component';
+import { NewsPortalComponent } from './components/news-portal/news-portal.component';
 
 export const routes: Routes = [
   { path: 'chat', component: ChatInterfaceComponent },
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'macrovision', component: MacroVisionComponent },
   { path: 'macrovision/new', component: ProjectOverviewComponent },
   { path: 'macrovision/:id', component: ProjectOverviewComponent },
+  { path: 'news', component: NewsPortalComponent },
   // Redirection par défaut : si l'utilisateur arrive sur '/', il va directement sur le chat
   { path: '', redirectTo: 'chat', pathMatch: 'full' },
   { path: '**', redirectTo: 'chat' } // Sécurité pour les routes inconnues

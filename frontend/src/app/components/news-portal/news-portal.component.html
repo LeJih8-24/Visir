@@ -1,0 +1,58 @@
+<div class="news-container">
+  <div class="news-header">
+    <div class="header-title">
+      <h2>Portail d'Actualités</h2>
+      <p>Veille automatisée</p>
+    </div>
+    
+    <div class="category-tabs custom-scrollbar">
+      <button 
+        *ngFor="let cat of categories"
+        class="tab-btn"
+        [class.active]="activeCategory === cat"
+        (click)="loadNews(cat)"
+      >
+        {{ cat }}
+      </button>
+    </div>
+  </div>
+
+  <div class="news-grid-area custom-scrollbar">
+    <div *ngIf="loading" class="flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+    </div>
+    
+    <div *ngIf="!loading && articles.length === 0" class="empty-state">
+      Aucun article trouvé pour cette catégorie.
+    </div>
+
+    <div class="news-grid" *ngIf="!loading && articles.length > 0">
+      <div class="news-card" *ngFor="let article of articles">
+        <div class="card-image-placeholder" *ngIf="!article.image_url">
+          <span class="text-slate-400 text-xs uppercase tracking-widest font-bold">{{ article.category }}</span>
+        </div>
+        <img *ngIf="article.image_url" [src]="article.image_url" alt="Cover" class="card-image">
+        
+        <div class="card-content">
+          <div class="card-meta">
+            <span class="badge">{{ article.category }}</span>
+            <span class="date">{{ article.published_at | date:'dd MMM yyyy' }}</span>
+          </div>
+          
+          <h3 class="card-title">{{ article.title }}</h3>
+          
+          <p class="card-summary" [innerHTML]="article.summary | slice:0:150">
+            {{ article.summary?.length > 150 ? '...' : '' }}
+          </p>
+          
+          <a [href]="article.link" target="_blank" rel="noopener noreferrer" class="read-more-btn">
+            Lire la suite
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -58,3 +58,15 @@ class ProjectTaskResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class NewsArticleResponse(BaseModel):
+    id: int
+    title: str
+    link: str
+    summary: Optional[str]
+    image_url: Optional[str]
+    category: str
+    published_at: datetime
+
+    class Config:
+        from_attributes = True
