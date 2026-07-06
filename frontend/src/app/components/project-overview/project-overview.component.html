@@ -1,0 +1,165 @@
+<div class="project-overview-container">
+  <div class="project-overview-header flex items-center justify-between mb-6">
+    <div class="flex items-center gap-4">
+      <button class="back-btn" (click)="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Retour
+      </button>
+      <h2>{{ isEditMode ? 'Détails du Projet' : 'Nouveau Projet' }}</h2>
+    </div>
+  </div>
+
+  <div class="project-overview-layout">
+    <!-- Left side: Project Details -->
+    <div class="project-details-section">
+      <div class="project-overview-body">
+        <div class="form-group">
+          <label>Titre</label>
+          <input type="text" [(ngModel)]="modalData.title" class="macro-input" placeholder="Ex: Campagne de lancement" autofocus>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date de début</label>
+            <input type="date" [(ngModel)]="modalData.start_date" class="macro-input">
+          </div>
+          <div class="form-group">
+            <label>Date de fin</label>
+            <input type="date" [(ngModel)]="modalData.end_date" class="macro-input">
+          </div>
+        </div>
+      </div>
+
+      <div class="project-overview-footer">
+        <button *ngIf="isEditMode" class="delete-btn" (click)="deleteMilestone()">Supprimer</button>
+        <div class="flex-spacer"></div>
+        <button class="cancel-btn" (click)="goBack()">Annuler</button>
+        <button class="save-btn" [disabled]="!modalData.title || !modalData.start_date || !modalData.end_date" (click)="saveMilestone()">Enregistrer</button>
+      </div>
+    </div>
+
+    <!-- Right side: Project Notes (only in edit mode) -->
+    <div class="project-notes-section" *ngIf="isEditMode">
+      <div class="notes-header flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
+        <h4 class="text-sm font-bold uppercase tracking-wider text-slate-700">Notes du Projet</h4>
+        <span class="text-xs text-slate-400">{{ projectNotes.length }} notes</span>
+      </div>
+
+      <div class="notes-list-area custom-scrollbar">
+        <div *ngFor="let note of projectNotes" class="group bg-slate-50 border border-slate-200 shadow-sm p-3 rounded-xl relative hover:border-amber-300 hover:shadow-md transition-all mb-3">
+          <button (click)="deleteProjectNote(note.id)" class="absolute top-2 right-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-14v4m-6 0h6m-9 0h12" />
+            </svg>
+          </button>
+          <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line pr-4">{{ note.content }}</p>
+          <span class="text-[10px] text-slate-400 block mt-2">{{ note.created_at | date:'dd/MM HH:mm' }}</span>
+        </div>
+
+        <div *ngIf="projectNotes.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-2 py-8">
+          <p class="text-xs tracking-wide">Aucune note pour ce projet.</p>
+        </div>
+      </div>
+
+      <div class="notes-input-area mt-4 pt-2 border-t border-slate-100 flex gap-2">
+        <input 
+          type="text" 
+          [(ngModel)]="newNoteContent" 
+          (keyup.enter)="addProjectNote()"
+          placeholder="Nouvelle note..."
+          class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+        >
+        <button 
+          (click)="addProjectNote()"
+          [disabled]="!newNoteContent.trim()"
+          class="px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 shadow-sm rounded-xl disabled:opacity-40 text-xs transition-colors"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kanban Board Section -->
+  <div class="kanban-section" *ngIf="isEditMode">
+    <div class="kanban-header flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
+      <h4 class="text-sm font-bold uppercase tracking-wider text-slate-700">Tâches du Projet (Kanban)</h4>
+    </div>
+    
+    <div class="kanban-board">
+      
+      <!-- TODO Column -->
+      <div class="kanban-column" (dragover)="onDragOver($event)" (drop)="onDrop('todo', $event)">
+        <div class="kanban-column-header">
+          <h5 class="todo-color">À faire</h5>
+          <span>{{ todoTasks.length }}</span>
+        </div>
+        <div class="kanban-input-area mb-3 flex gap-2">
+          <input 
+            type="text" 
+            [(ngModel)]="newTaskTitle" 
+            (keyup.enter)="addProjectTask()"
+            placeholder="Nouvelle tâche..."
+            class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all"
+          >
+          <button 
+            (click)="addProjectTask()"
+            [disabled]="!newTaskTitle.trim()"
+            class="px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 shadow-sm rounded-lg disabled:opacity-40 text-xs transition-colors"
+          >
+            +
+          </button>
+        </div>
+        <div class="kanban-cards custom-scrollbar">
+          <div *ngFor="let task of todoTasks" class="kanban-card group" draggable="true" (dragstart)="onDragStart(task, $event)">
+            <p class="kanban-card-title">{{ task.title }}</p>
+            <button (click)="deleteProjectTask(task.id)" class="delete-task-btn group-hover:opacity-100 opacity-0 transition-opacity">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 hover:text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-14v4m-6 0h6m-9 0h12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- IN PROGRESS Column -->
+      <div class="kanban-column" (dragover)="onDragOver($event)" (drop)="onDrop('in_progress', $event)">
+        <div class="kanban-column-header">
+          <h5 class="inprogress-color">En cours</h5>
+          <span>{{ inProgressTasks.length }}</span>
+        </div>
+        <div class="kanban-cards custom-scrollbar mt-2">
+          <div *ngFor="let task of inProgressTasks" class="kanban-card group" draggable="true" (dragstart)="onDragStart(task, $event)">
+            <p class="kanban-card-title">{{ task.title }}</p>
+            <button (click)="deleteProjectTask(task.id)" class="delete-task-btn group-hover:opacity-100 opacity-0 transition-opacity">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 hover:text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-14v4m-6 0h6m-9 0h12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DONE Column -->
+      <div class="kanban-column" (dragover)="onDragOver($event)" (drop)="onDrop('done', $event)">
+        <div class="kanban-column-header">
+          <h5 class="done-color">Terminé</h5>
+          <span>{{ doneTasks.length }}</span>
+        </div>
+        <div class="kanban-cards custom-scrollbar mt-2">
+          <div *ngFor="let task of doneTasks" class="kanban-card done-card group" draggable="true" (dragstart)="onDragStart(task, $event)">
+            <p class="kanban-card-title">{{ task.title }}</p>
+            <button (click)="deleteProjectTask(task.id)" class="delete-task-btn group-hover:opacity-100 opacity-0 transition-opacity">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 hover:text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-14v4m-6 0h6m-9 0h12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

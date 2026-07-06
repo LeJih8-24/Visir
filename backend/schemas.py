@@ -37,3 +37,24 @@ class ProjectNoteResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ProjectTaskCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    status: Optional[str] = "todo"
+
+class ProjectTaskUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+
+class ProjectTaskResponse(BaseModel):
+    id: int
+    project_id: int
+    title: str
+    description: Optional[str]
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

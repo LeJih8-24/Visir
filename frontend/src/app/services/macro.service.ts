@@ -37,4 +37,21 @@ export class MacroService {
   deleteProjectNote(milestoneId: string, noteId: number): Observable<any> {
     return this.http.delete<any>(this.apiUrl + `roadmap/${milestoneId}/notes/${noteId}`);
   }
+
+  // --- Project Tasks ---
+  getProjectTasks(milestoneId: string): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl + `roadmap/${milestoneId}/tasks`);
+  }
+
+  createProjectTask(milestoneId: string, data: { title: string, description?: string, status?: string }): Observable<any> {
+    return this.http.post<any>(this.apiUrl + `roadmap/${milestoneId}/tasks`, data);
+  }
+
+  updateProjectTask(milestoneId: string, taskId: number, data: any): Observable<any> {
+    return this.http.put<any>(this.apiUrl + `roadmap/${milestoneId}/tasks/${taskId}`, data);
+  }
+
+  deleteProjectTask(milestoneId: string, taskId: number): Observable<any> {
+    return this.http.delete<any>(this.apiUrl + `roadmap/${milestoneId}/tasks/${taskId}`);
+  }
 }

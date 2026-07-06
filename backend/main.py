@@ -447,3 +447,43 @@ def delete_project_note(milestone_id: int, note_id: int, db: Session = Depends(g
     db.delete(db_note)
     db.commit()
     return {"status": "success", "message": "Note de projet supprimée."}
+
+# --- PROJECT TASKS ---
+
+@app.get("/macro/roadmap/{milestone_id}/tasks", response_model=list[schemas.ProjectTaskResponse])
+def get_project_tasks(milestone_id: int, db: Session = Depends(get_db)):
+    return db.query(models.ProjectTask).filter(models.ProjectTask.project_id == milestone_id).order_by(models.ProjectTask.created_at.desc()).all()
+
+@app.post("/macro/roadmap/{milestone_id}/tasks", response_model=schemas.ProjectTaskResponse)
+def create_project_task(milestone_id: int, task: schemas.ProjectTaskCreate, db: Session = Depends(get_db)):
+    db_milestone = db.query(models.ProjectMilestone).filter(models.ProjectMilestone.id == milestone_id).first()
+    if not db_milestone:
+        raise HTTPException(status_code=404, detail="Projet non trouvé")
+    new_task = models.ProjectTask(project_id=milestone_id, title=task.title, description=task.description, status=task.status)
+    db.add(new_task)
+    db.commit()
+    db.refresh(new_task)
+    return new_task
+
+@app.put("/macro/roadmap/{milestone_id}/tasks/{task_id}", response_model=schemas.ProjectTaskResponse)
+def update_project_task(milestone_id: int, task_id: int, task_update: schemas.ProjectTaskUpdate, db: Session = Depends(get_db)):
+    db_task = db.query(models.ProjectTask).filter(models.ProjectTask.id == task_id, models.ProjectTask.project_id == milestone_id).first()
+    if not db_task:
+        raise HTTPException(status_code=404, detail="Tâche introuvable")
+    
+    update_data = task_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_task, key, value)
+        
+    db.commit()
+    db.refresh(db_task)
+    return db_task
+
+@app.delete("/macro/roadmap/{milestone_id}/tasks/{task_id}")
+def delete_project_task(milestone_id: int, task_id: int, db: Session = Depends(get_db)):
+    db_task = db.query(models.ProjectTask).filter(models.ProjectTask.id == task_id, models.ProjectTask.project_id == milestone_id).first()
+    if not db_task:
+        raise HTTPException(status_code=404, detail="Tâche introuvable")
+    db.delete(db_task)
+    db.commit()
+    return {"status": "success", "message": "Tâche de projet supprimée."}

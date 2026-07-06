@@ -63,6 +63,18 @@ class ProjectMilestone(Base):
     color_hex = Column(String, default="#0d9488") # Pour l'affichage dans le diagramme de Gantt
     
     notes = relationship("ProjectNote", back_populates="project", cascade="all, delete-orphan")
+    tasks = relationship("ProjectTask", back_populates="project", cascade="all, delete-orphan")
+
+class ProjectTask(Base):
+    __tablename__ = "project_tasks"
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("project_milestones.id"))
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    status = Column(String, default="todo") # "todo", "in_progress", "done"
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("ProjectMilestone", back_populates="tasks")
 
 class ProjectNote(Base):
     __tablename__ = "project_notes"
