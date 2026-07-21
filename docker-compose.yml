@@ -1,6 +1,18 @@
 version: '3.8'
 
 services:
+  reverse-proxy:
+    image: nginx:latest
+    container_name: visir_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+    networks:
+      - visir_network
+
   db:
     # On utilise une image pré-configurée avec pgvector pour le RAG
     image: ankane/pgvector:latest
@@ -11,7 +23,7 @@ services:
       POSTGRES_PASSWORD: visir_password
       POSTGRES_DB: visir_db
     ports:
-      - "6767:6767"
+      - "6767:5432" # Corrigé : map le port hôte 6767 vers le port conteneur 5432
     volumes:
       - visir_postgres_data:/var/lib/postgresql/data
     networks:
@@ -40,8 +52,8 @@ services:
       dockerfile: Dockerfile
     container_name: visir_frontend
     restart: unless-stopped
-    ports:
-      - "4200:4200"
+    expose:
+      - "4200" # Rendu invisible depuis l'extérieur, accessible uniquement via Nginx
     volumes:
       - ./frontend:/app           # Synchronise ton code en temps réel
       - /app/node_modules         # Isole les node_modules du conteneur
